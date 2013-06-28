@@ -15,7 +15,7 @@
 \usepackage{inconsolata}
 
 \lstset{basicstyle=\footnotesize\ttfamily,breaklines=true}
-\lstset{framextopmargin=50pt}
+\lstset{ tabsize=2, numbers=left, frame=single}
 
 \title{ Analysis of Ligra: a lightweight framework for graph processing for shared memory}
 \author{Arjun Naik}
@@ -26,14 +26,14 @@
 \maketitle
 
 \begin{abstract}
-Graph Processing of large graph has become an interesting field of research in recent years. Social networks, marketing strategies, financial transactions, cellular networks generate large amounts of data. Analysing this data provides valuable insights into the nature of the data and type of interactions.  The previous approaches have used cluster based system for processing the graph data. However recent advances in hardware technology have made it possible to process relatively large graphs on multicore computers. Ligra \cite{Shun:2013:LLG:2442516.2442530} is a framework developed by Carnegie Mellon University which run on commodity multicore computers. The paper describes the interface of Ligra and it's features. Also some important graph processing algorithms and their implementation in Ligra is listed. Benchmarks on Ligra and their comparison to other similar frameworks have also been listed.
+Graph Processing of large graph has become an interesting field of research in recent years. Social networks, marketing strategies, financial transactions and cellular networks generate large amounts of data. Analysing this data provides valuable insights into the nature of the data and type of interactions.  The previous approaches have used cluster based system for processing the graph data. However recent advances in hardware technology have made it possible to process relatively large graphs on multicore computers. Ligra is a framework developed by Carnegie Mellon University which runs on commodity multicore computers. The paper describes the interface of Ligra and it's features. Also some important graph processing algorithms and their implementation in Ligra is listed. Benchmarks on Ligra and their comparison to other similar frameworks have also been listed.
 \end{abstract}
 
 \tableofcontents
 
 \section{Introduction of the Research Field}
 
-In the recent past there has been a increase in the processing of the large graphs from fields of computer networks, social networks , mobile call networks, marketing, the World Wide Web, protein regulation networks targeted advertising, natural language processing and other related fields. Before Ligra there have several attempts to process such large graphs in a distributed memory environment. However modern advances in hardware have made to possible to store very large in a single memory. Today a multicore machine can have a terabyte of memory and can store a graph with tens to hundreds of billions of edges. Also shared memory systems are more efficient that distributed memory. The algorithms for shared memory systems are also simpler than their distributed memory counterparts.
+In the recent past there has been a increase in the processing of the large graphs from fields of computer networks, social networks , mobile call networks, marketing, the World Wide Web, protein regulation networks targeted advertising, natural language processing and other related fields. Before Ligra \cite{Shun:2013:LLG:2442516.2442530} there have been several attempts to process such large graphs in a distributed memory environment. However modern advances in hardware have made to possible to store very large in a single memory. Today a multicore machine can have a terabyte of memory and can store a graph with tens to hundreds of billions of edges. Also shared memory systems are more efficient that distributed memory. The algorithms for shared memory systems are also simpler than their distributed memory counterparts.
 
 	Although shared memory systems cannot scale to the size of distributed memory they can still contain very large graphs. The communication overhead in distributed memory is more than in shared memory systems which gives the latter certain performance benefits. 
 
@@ -144,7 +144,7 @@ procedure VERTEXMAP(U, F)
 
 \end{lstlisting}
 
-\subsection{Algorithm Optimaztion}
+\subsection{Algorithm Optimization}
 
 Several optimization are possible to the interface and the implementation which do not affect the correctness of the solutions.
 \begin{enumerate}
@@ -175,7 +175,7 @@ In this one vertex is the source and is designated as the root. Consequently in 
 
 
 \subsection{Betweenness Centrality}
-Betweenness Centrality can be formally be defined as
+Betweenness Centrality can be formally defined as
 $C_{B}(v) = \Sigma _{ s \neq v \neq t \in V } \delta _{st} (v)$
 where $ \delta _{st} (v) = \sigma_{st}(v)/\sigma{st} $ which is called the pair-dependency of s and t on v.
 Hence $C_{B}(v)$ is the summation of all the pair-dependencies of all s and t which are not v.
