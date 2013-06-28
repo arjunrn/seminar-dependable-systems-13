@@ -1,0 +1,368 @@
+%	Copyright (C) 2013 Systems Engineering Group
+%
+%	CHANGELOG:
+%       2005-10-10 - corrected and extended. 
+%       2013-01-28 - adjusted sections and explanation
+%
+
+
+\documentclass[a4paper,10pt,twoside]{article}
+\pagestyle{headings}
+\usepackage{a4wide}
+\usepackage[colorlinks,hyperfigures,backref,bookmarks,draft=false]{hyperref}
+\usepackage{amssymb,amsmath}
+\usepackage{listings}
+\usepackage{inconsolata}
+
+\lstset{basicstyle=\footnotesize\ttfamily,breaklines=true}
+\lstset{framextopmargin=50pt}
+
+\title{ Analysis of Ligra: a lightweight framework for graph processing for shared memory}
+\author{Arjun Naik}
+\date{2013-05-31}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Graph Processing of large graph has become an interesting field of research in recent years. Social networks, marketing strategies, financial transactions, cellular networks generate large amounts of data. Analysing this data provides valuable insights into the nature of the data and type of interactions.  The previous approaches have used cluster based system for processing the graph data. However recent advances in hardware technology have made it possible to process relatively large graphs on multicore computers. Ligra \cite{Shun:2013:LLG:2442516.2442530} is a framework developed by Carnegie Mellon University which run on commodity multicore computers. The paper describes the interface of Ligra and it's features. Also some important graph processing algorithms and their implementation in Ligra is listed. Benchmarks on Ligra and their comparison to other similar frameworks have also been listed.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction of the Research Field}
+
+In the recent past there has been a increase in the processing of the large graphs from fields of computer networks, social networks , mobile call networks, marketing, the World Wide Web, protein regulation networks targeted advertising, natural language processing and other related fields. Before Ligra there have several attempts to process such large graphs in a distributed memory environment. However modern advances in hardware have made to possible to store very large in a single memory. Today a multicore machine can have a terabyte of memory and can store a graph with tens to hundreds of billions of edges. Also shared memory systems are more efficient that distributed memory. The algorithms for shared memory systems are also simpler than their distributed memory counterparts.
+
+	Although shared memory systems cannot scale to the size of distributed memory they can still contain very large graphs. The communication overhead in distributed memory is more than in shared memory systems which gives the latter certain performance benefits. 
+
+\section{Basics}
+
+Graph theory is a field of study which has been in existence since before the invention of computers. In mathematics and computer science, graph theory is the study of graphs, which are mathematical structures used to model pairwise relations between objects\cite{wiki:GraphTheory}. A graph is made up of vertices and edges. An edge is connection between two vertices. If there is a direction associated with this connection then such an edge is called a directed edge an a graph with such edges is called a directed graph. Edges can have also weights associated with them. This weight is a quantity which could indicate any value associated with the edge such as time required to move from one vertex of the edge to another. 
+	There are several algorithms which are used for processing of these graph. The most common among them is Breadth First Search(BFS) algorithm. It is used sometimes as a sub-step in other graph algorithms. Breadth First Search is used to find the shortest path between two vertices. 
+
+	Betweeness Centrality is the measure of importance of a node in a network(graph). It is defined as the mesaure of nodes centrality in the network. It is the  ratio number of shortest paths in the graph that pass through a vertex to the total number of shortest paths.
+
+	The diameter of the graph is the shortest path between any two nodes of the graph which has the highest value. The radius of a node v is the distance to the furthest node to which it is connected. Hence by definition the radius of a disconnected graph is infinity.
+
+	A connected component of a unidirected graph is a subgraph in which any two vertices are connected to each other by paths, and which is connected to no additional vertices in supergraph. A graph that is itself connected has exactly one connected component, consisting of the whole graph.
+
+	PageRank algorithm \cite{Brin:1998:ALH:297810.297827} was developed by Larry Page and was used by the Google Search Engine. The algorithm assigns weights to every element or document with the purpose of measuring its relative importance within the set. This algorithm can be applied to any set of related entities with quotations.
+
+	Dijkstra's Algorithm computes the shortest path from a vertex in a graph to anyother vertex. However it cannot handle graphs with negative weights. Bellman-Ford's algorithm for shortest path is less efficient than Dijkstra's algorithm however it can handle shortcoming. If a graph has a cycle with a negative weight then if a path uses this cycle then the total weight can be made lower by progressing through the cycle again and again. Bellman-Ford's algorithm can detect the negative cycle and report it.
+
+\section{Previous and Related Work}
+
+Also Beamer et. Al \cite{Beamer:2012:DBS:2388996.2389013} have developed a algorithm for fast computation of BFS in shared memory machines. This algorithm processes the graphs differently based on the nature of the graph. If the graph is synthetic then the algorithm uses a top-down approach and in the case of a small-world graph it uses a bottom-up approach. This yields significant speedups for multicore machines. The algorithm heuristically determines which approach has to be used based on the number of edges and vertices in the frontier.
+
+	There are already several products, both open-source and proprietary for processing large-scale graphs. They are based mostly on distributed memory systems and are significantly slower than Ligra. 
+PEGASUS \cite{Kang:2011:PMP:1971122.1971124} is a Peta Graph Mining Library which is built using the HADOOP platform which is the open-source implementation of MAP-REDUCE. PEGASUS approaches the graph processing as repeated matrix-vector multiplication operations. It uses a primitive called as Generalized Iterated Matrix-Vector (GIM-V)  multiplication. The GIM-V can be represented at 3 types of sub-operations, combine, combineAll and assign which can be customized to perform graph mining operations like PageRank, Random Walk with Restart, diameter estimation, and connected components.
+
+	Knowledge Discovery Toolbox \cite{lugowski2012flexible} is a toolkit for performing analysis on large and complex graphs. It has a Python interface which makes it's very flexible and suitable for use by both domain experts and graph algorithm designers. Because it is not implemented in Python it runs very quickly. It is also not just a thin wrapper over another framework in a lower level language. It is a higher level library with primitives for graph manipulation and analysis. KDT is a distributed toolkit and can scale from a single node to a High Performance Computing cluster.
+
+	Pregel \cite{Malewicz:2010:PSL:1807167.1807184} is an C++ framework for processing large graphs in a distributed environment. It takes a synchronous and vertex based approach to processing large graph. Due to this it avoids race-conditions which are associated with asynchronous approaches. Each computation done is done in a iteration called a Super-step. In each super-step a vertex can receive messages from the previous super-step and also send messages to vertices in the next super-step.
+
+	PowerGraph \cite{gonzalez2012powergraph} is a graph-parallel abstraction like Pregel and GraphLab. In order to processes real-world graphs more efficiently PowerGraph makes its computation over edges rather than vertices. This is done because most large natural graphs are highly connected and processing them vertex-wise results in concurrency issues. By processing them using edge based computation PowerGraph can produce higher parallelism.
+
+	GraphLab \cite{low2010graphlab} is a parallel framework which uses shared-memory for graph analysis. It provides abstractions to algorithm designers for making scalable parallel algorithms by composing problem specific computation, data-dependencies, and scheduling. It provides a graph model for data and computation. Sequential guarantees are maintained in concurrent computation with modular scheduling. Global state is maintained through aggregation.
+
+	Grace \cite{Prabhakaran:2012:MLG:2342821.2342825} is a graph-aware in-memory graph analysis program. It is designed to run on multicore machines and supports queries on it's data. It has been designed specifically with low latency applications as it's focus. It processes the graphs through iterative computations.
+
+	Graph-Chi \cite{Kyrola:2012:GLG:2387880.2387884} is a disk-based system which breaks large graphs into small parts for computation purposes. It uses a unique Parallel Sliding Window[PSW] to read the data from the disk. It performs on SSDs and rotational magnetic disks equally well. PSW needs only few accesses to the disk which allows for fast access of input data. A side-effect of PSW is asynchronous computation. 
+
+Green-Marl \cite{Hong:2012:GDE:2189750.2151013} is a domain-specific language(DSL) used for which is used for high level graph analysis but it provides hooks for customizing the parallelism in the algorithms. The Green-Marl compiler compiles the Green-Marl code into C++ which is highly efficient. It also optimizes the generated code using the associated parallelism logic. 
+
+The Galois system is based on the Tao approach to design graph algorithms \cite{Pingali:2011:TPA:1993498.1993501}. It avoids the dependency graph model for parallel computation and instead adopts a data-centric formulation of algorithms.
+
+\section{Ligra's Approach}
+
+The framework provides the following 3 functions as the interface.
+\subsection{SIZE function}
+\begin{lstlisting}
+SIZE(U: vertexSubset) : N
+\end{lstlisting}
+Return the size of the subset which is \textbar U\textbar
+
+\subsection{EDGEMAP function}
+\begin{lstlisting}
+EDGEMAP(
+	G: graph,
+	U: vertexSubset,
+	F: (vertex X vertex) ==> bool,
+	C: vertex ==> bool,
+): vertexSubset
+\end{lstlisting}
+
+The EDGEMAP function applies the function F to all edges with source in U and target vertex satisfying the condition C. The EDGEMAP returns another vertexSubset. This can be formally represented as 
+Out = { v | (u ,v) ≠ ε Ea Λ F(u,v) – true }
+The function F is applied in parallel to all the vertices which satisfy the condition. Hence the F must be correct with parallel execution.
+
+
+\subsection{VERTEXMAP function}
+\begin{lstlisting}
+VERTEXMAP(
+	U: vertexSubset,
+	F: vertex ==> bool
+): vertextSubset
+\end{lstlisting}
+
+The function is applied to all the vertices in U. It returns a vertexSubset.
+The vertices in a vertexSubset can be represented using a sparse or a dense representation. The EDGEMAP function is implemented as EDGEMAPDENSE or EDGEMAPSPARSE. The EDGEMAPSPARSE loops over all the vertices in the VertexSubset input. It then applies the function F to all the vertices u in the input and to the it's neighbors in parallel. The output in in sparse representation.
+In EDGEMAPDENSE it loops over all the vertices V in parallel and applied F(ngh, v) to each of v's neighbors ngh that are in the input, until C(u) return false. It returns a dense representation in it's output.
+
+\begin{lstlisting}
+procedure EDGEMAP(G, U, F, C)
+	if( |U| + sum of out-degrees of U < threshold) then
+		return EDGEMAPDENSE(G, U, F, C)
+	else return EDGEMAPSPARSE(G, U, F, C)
+
+procedure EDGEMAPSPARSE(G, U, F, C)
+	Out = {}
+	parfor each v (belongs to symbol) U do
+		parfor ngh (belongs to) N+(v) do
+			if(C(ngh) == 1 and F(v, ngh) == 1) then
+				Add ngh to Out
+	Remove duplicates from Out
+	return Out
+
+procedure EDGEMAPDENSE(G, U, F, C)
+	Out = {}
+	parfor i (belongs to) {0,...,|V|-1} do
+		if(C(i) == 1) then
+			for(ngh (belongs to) N-(i) do
+				if(ngh (belongs to) U and F(ngh,i) == 1) then
+					Add i to Out
+				if(C(i) == 0) then break
+	return Out
+
+procedure VERTEXMAP(U, F)
+	Out = {}
+	parfor u (belongs to) U do
+		if(F(u) == 1) then Add u to Out
+	return Out
+
+\end{lstlisting}
+
+\subsection{Algorithm Optimaztion}
+
+Several optimization are possible to the interface and the implementation which do not affect the correctness of the solutions.
+\begin{enumerate}
+\item Since the function F is applied in parallel in EDGEMAPSPARSE and sequentially in EDGEMAPDENSE two different algorithms can be used. One of them which is correct on parallel execution with respect to both arguments and the other which is correct when is correct with respect to only the first argument which is the source vertex. This optimization provides speedup in some applications.
+\item Generally \textbar E\textbar/20  is used to determine which implementation is used. If however another threshold needs to be used then it can be passed as a parameter.
+\item If the inner-loop of the EDGEMAPDENSE has to be run in parallel then a different implementation called as EDGEMAPDENSE-WRITE can be used.
+\end{enumerate}
+
+\section{Evaluation}
+
+The paper discusses six examples to demonstrate the usage of the LIGRA framework. Most important among them are:
+\subsection{Breadth First Search}
+\begin{lstlisting}Parents = {-1, -1.... , -1}
+procedure UPDATE(s, d)
+	return (CAS(&Parents[d], -1, s))
+
+procedure COND(i)
+	return (Parents(i) == -1)
+
+procedure BFS(G, r)
+	Parents[r] = r
+	Frontier = {r}
+	while(size(Frontier) != 0) do
+		Frontier = EDGEMAP(G, Frontier, UPDATE, COND)
+\end{lstlisting}
+
+In this one vertex is the source and is designated as the root. Consequently in a unidirectional graph it does not matter which vertex is chosen as the source. The algorithm progress iteratively through the graph. In the first iteration the root is added to a set of vertices which is known as frontier. In each step of the iteration we find all the neighboring vertices of all the vertices in the frontier set. All these neighboring vertices form a new set which becomes the frontier set in the next iteration. If a vertex has already been visited before then it is not added to the frontier set. The algorithm iterates until the frontier set is null which means that all the vertices have already been visited.
+
+
+\subsection{Betweenness Centrality}
+Betweenness Centrality can be formally be defined as
+$C_{B}(v) = \Sigma _{ s \neq v \neq t \in V } \delta _{st} (v)$
+where $ \delta _{st} (v) = \sigma_{st}(v)/\sigma{st} $ which is called the pair-dependency of s and t on v.
+Hence $C_{B}(v)$ is the summation of all the pair-dependencies of all s and t which are not v.
+
+\begin{lstlisting}NumPaths = {0 , ..., 0}
+Visited = { 0, . . . . , 0 }
+NumPaths[r] = 1
+Visited[r] = 1
+currLevel = 0
+Levels = [ ]
+Dependencies = {0.0,....,0.0}
+
+procedure VISIT(i)
+	Visited[i] = 1
+	return 1
+
+procedure PATHSUPDATE(s,d)
+	repeat
+		oldV = NumPaths[d]
+		newV = oldV + NumPaths[d]
+	until (CAS(&NumPaths[d], oldV, newV) == 1)
+	return (oldV == 0)
+
+procedure DEPUPDATE(s,d)
+	repeat
+		oldV = Dependencies[d]
+		newV = oldV + NumPaths[d]/NumPaths[s] X (1 + Dependencies[s])
+	until (CAS(&Dependencies[d], oldV, newV) == 1)
+	return (oldV == 0.0)
+
+procedure COND(i)
+	return (Visited[i] == 0)
+
+procedure BCG(G,r)
+	Frontier = {r}
+	while (SIZE(Frontier) != 0) do
+		Frontier = EDGEMAP(G, Frontier, PATHSUPDATE, COND)
+		Levels[currLevel] = Frontier
+		Frontier = VERTEXMAP(Frontier, VISIT)
+		currLevel = currLevel + 1
+
+	Visited = {0,...,0}
+	currLevel = currLevel – 1
+	TRANSPOSE(G)
+
+	while (currLevel >= 0) do
+		Frontier = Level[currLevel]
+		VERTEXMAP(Frontier, VISIT)
+		EDGEMAP(G, Frontier, DEPUPDATE, COND)
+		currLevel = currLevel – 1
+	return Dependencies
+
+\end{lstlisting}
+
+
+\subsection{Graph Radii Estimation}
+For large graph computing the precise value is generally infeasible and hence an approximate value is sufficient. Magnien et. al. have developer techniques for calculating the upper and lower bounds on the diameter of a graph. 
+
+\begin{lstlisting}
+Visited = {0,...,0}
+NextVisited = {0,...,0}
+Radii = {infinity, ...,infinity}
+round = 0
+
+procedure RADIIUPDATE(s,d)
+	if(Visited[d] != Visited[s]) then
+		ATOMICOR(&NextVisited[d], Visited[d], Visited[d] | Visited[s])
+		oldRadii == Radii[d]
+		if(Radii[d] != round) then
+			return CAS(&Radii[d], oldRadii, round)
+	return 0
+
+procedure ORCOPY(i)
+	NextVisited[i] = NextVisited[i] | Visited[i]
+	return 1
+
+procedure RADII(G)
+	Sample K Vertices and for each one set a unique bit in Visited to 1
+	Initialize Frontier to contain the K sampled vertices
+	Set the Radii entries of the sampled vertices
+	while(SIZE(Frontier) != 0) do
+		round = round + 1
+		Frontier = EDGEMAP(G, Frontier, RADIIUPDATE, Ctrue)
+		Frontier = VERTEXMAP(Frontier, ORCOPY)
+		SWAP(Visited, NextVisited)
+	return Radii
+
+\end{lstlisting}
+
+
+\subsection{Connected Components}
+In a graph G a connected component C is one in which all the vertices in C can reach all the other vertices in C. Hence , 
+$ \bigcup _{i} C _{i} = V $ 
+which means all the union of all components of a graph will contain all the vertices of the graph.
+	The algorithm to compute the connected components of the graph is as follows. An array of size \textbar V\textbar is initialized with all the ids of the vertices. On each iteration the neighbors of the vertex with the minimum value are changed to the minimum value. The iteration is stopped when there is no change to the array. The number of distinct values of this array gives the number of components in the graph. The component to which an array belongs to is indicated by the minimum value which is associated with the vertex.
+
+\begin{lstlisting}
+IDs = {0, 1... , |V-1|}
+prevIDs = {0, 1... , |V-1|}
+
+procedure CCUPDATE(s, d)
+	origID = IDs[d]
+	if(WRITEMIN(&IDs[d], IDs[s])) then
+		return (origID == prevIDs[d](
+	return 0
+
+procedure COPY(i)
+	prevIDs[i] = IDs[i]
+	return 1
+
+procedure CC(G)
+	Frontier = {0, 1... , |V-1|}
+	while(SIZE(FRONTIER) != 0) do
+		Frontier = VERTEXMAP(Frontier, COPY)
+		Frontier = EDGEMAP(G, Frontier, CCUPDATE, C(true)(
+	return IDs
+\end{lstlisting}
+
+
+\subsection{Page Rank}
+The PageRank algorithm was used by Google for displaying the search results by their priorities. It needs three inputs: a graph G(V, E), a damping factor $ 0 < \gamma < 1 $ and a convergence constant (epsilon). PageRank can be represented by the following equation
+
+\begin{lstlisting}
+PR[v] = 1 – (epsilon) / |V| + (epsilon)
+
+(sigma) u (belongs to) N-(v) PR[u]/ deg+(u)
+\end{lstlisting}
+
+
+\subsection{Bellman-Ford Shortest Paths}
+The Bellman-Ford algorithm is used to find the shortest path from a particular vertex to all other vertices in a graph. Although Djikstra's algorithm can also be used it does not work with negative edge weights. Whenever a new shortest path is discovered for a vertex then we need to recompute shortest path to only the neighboring vertices of that vertex. To achieve this we set the visited value to 0 in the BFRESET function. The algorithm is shown below.
+
+\begin{lstlisting}
+SP = {∞,∞,....,∞}
+Visited = {0,0...,0}
+
+procedure BFUPDATE(s, d, edgeWeight)
+	if(WRITEMAIN(&sd[d], SP[s] + edgeWeight)) then
+		return CAS(&Visited[d], 0, 1)
+
+procedure BFRESET(i)
+	Visited[i] = 0
+	return 1
+
+procedure BELLMAN-FORD(G, r)
+	SP[r] = 0
+	Frontier = {r}
+	round = 0
+	while(SIZE(Frontier) != 0 and round < |V|( do
+		round = round + 1
+		Frontier = EDGEMAP(G, Frontier, BF-UPDATE, C(true))
+		Frontier = VERTEXMAP(Frontier, BF-RESET)
+
+	if(round == |V|) then return “negative-weight-cycle”
+	else return SP
+
+\end{lstlisting}
+
+
+\section{Discussion}
+
+The Ligra framework was tested on both Intel and AMD processors. But the results from the AMD processor were slower than from the Intel processor. Hence only the results from the Intel processor are provided in the paper. The configuration of the machine used to test Ligra are as follows 4 X 2.4GHz Intel 10-core E7-8870 Xeon processors, a 1066Mhz bus, and 256GB of main memory. Intel's icpc compiler is used for compiling the parallel programs and g++ for the sequential programs.
+
+	Various graphs both real-world and synthesized are used for benchmarking the performance of Ligra in comparison with previous graph analysis software. They are as follows:
+1. 3D-grid which is a generated grid graph in which every vertex is connected to 6 other vertices.
+2. Random-local is also a synthesized graph. Every vertex is connected randomly to 5 other vertices. The probability that a vertex is connected to another vertex is inversely proportional to the distance between the 2 vertices.
+3. RMat24 and RMat27 are 2 rMat graphs which are generated graph which a power-law distribution.
+4. Twitter is a popular micro-blogging platform and the Twitter graph is based on it. There are 41.7 vertices and 1.47 billion edges.
+5. Yahoo is another real world graph 1.4 billion vertices and 6.6 billion edges. This graph was made symmetric for the purposes of benchmarking.
+
+For all algorithms except Bellman-Ford EDGEMAPDENSE was used. For only the Bellman-Ford algorithm the EDGEMAPDENSE-WRITE optimization was used. This resulted in a speedup of 10-28 times for Breath-First-Search. For betweenness centrality a 12-32 fold speedup is achieved as compared to the KDT system.
+
+Kang et. al. developed a MapReduce based implementation of radii distribution computation. On a 40 core machine Ligra completed the same calculation in 12 seconds compared to 30 machines on a 90 machine cluster.
+
+
+The Pegasus library which also uses the MapReduce framework. Using this a graph with 59,000 vertices and 282 million edges takes 10 minutes and 6 iterations on a cluster of 90 machines. Compared to this Ligra takes 10 seconds on a 40 core machines to make the same computation.
+
+GPS graph processing systems implements the PageRank algorithm. This was tested on EC2 with 30 instances. For the web-graph with 3.7 billion edges GPS required 100 iterations with 1.44 minutes for each iteration and hence a total running time of 144 minutes. For the same PageRank algorithm for a larger Yahoo graph Ligra performed the computation in 20 seconds. For the Witter graph Ligra took 2.91 seconds compared to 3.6 seconds. PageRank and PageRank-Delta were also compared with a damping factor of (gamma symbol)=0.85 and parameters (epsilon)=10(raised to -7) and (delta)=10(raised to -2). PageRank-Delta is faster by a factor of 6 on rMat24.
+
+The parallel implementation of Bellman-Ford algorithm in Ligra has also been compared to a naive implementation. On a cluster of 300 multicore commodity computer the running time for the naive implementation was 20 seconds. For the parallel implementation with a single 40 core computer the running time was only 2 seconds.
+
+
+\section{Conclusion}
+
+The paper provides detailed examples of usage of the framework. All examples are illustrated and explained in detail. Also the benchmark performed on Ligra are very systematically compared to benchmarks from other framework. From this is can concluded that Ligra has provided very significant speedup. However there are no comparison between the ease of usage between the existing frameworks and Ligra is provided. Also internal details of the implmentation of Ligra and how the various techniques which are used and the mechanism of the speed they provide is not described. Also as the paper mentions modifying the input graph is not supported currently which is an important feature which is missing. Speedup by using the Graphics Processing Unit has also not been implemented. However this is mentioned as a possible future direction of improvement of the Ligra framework.
+
+\bibliographystyle{alpha}
+\bibliography{handin} 
+
+\end{document}
